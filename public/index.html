@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orquestrador — Guia do Parceiro · Anova Investimentos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<style>
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Regular.otf') format('opentype');font-weight:400;font-display:swap}
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Light.otf') format('opentype');font-weight:300;font-display:swap}
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Medium.otf') format('opentype');font-weight:500;font-display:swap}
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Semibold.otf') format('opentype');font-weight:600;font-display:swap}
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Bold.otf') format('opentype');font-weight:700;font-display:swap}
+@font-face{font-family:'SF Pro Display';src:url('https://sf.abarber.me/SF-Pro-Display-Heavy.otf') format('opentype');font-weight:800;font-display:swap}
+:root{
+  /* ── ANOVA DS v1.0.1 — Paleta Monocromática Absoluta ── */
+  --onyx:#000000;--white:#FFFFFF;--charcoal:#333333;
+  --grey:#888888;--silver:#CCCCCC;--snow:#F8F8F8;
+  /* Semantic — Light (padrão) */
+  --bg:var(--white);--bg-alt:var(--snow);
+  --surface:var(--white);--surface-2:var(--snow);
+  --border:var(--silver);--border-hi:var(--grey);
+  --text-1:var(--onyx);--text-2:var(--charcoal);--text-3:var(--grey);
+  --accent:var(--onyx);--accent-inv:var(--white);--accent-dim:rgba(0,0,0,.06);
+  /* WhatsApp mockup palette (isolated) */
+  --wa-green:#25D366;--wa-green-btn:#00A884;
+  --wa-bg:#0B141A;--wa-panel:#111B21;--wa-bubble-in:#1F2C34;--wa-bubble-out:#005C4B;
+  --wa-text:#E9EDEF;--wa-text-dim:#8696A0;
+  /* Typography — SF Pro Display + DM Mono */
+  --font:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+  --mono:'DM Mono','SF Mono',monospace;
+  --font-display:var(--font);--font-body:var(--font);--font-code:var(--mono);
+  /* Scale — Apple-aligned hierarchy */
+  --text-hero:76px;--text-3xl:56px;--text-2xl:40px;
+  --text-xl:28px;--text-lg:22px;--text-md:18px;
+  --text-base:15px;--text-sm:13px;--text-xs:11px;--text-micro:10px;
+  /* Spacing — 8pt grid */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;
+  --s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;--s10:128px;
+  /* Radius — generous, Apple-style */
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;--r-2xl:32px;--r-squircle:22%;--r-pill:99px;--r-full:99px;
+  /* ZERO sombras. Flat design absoluto. */
+  /* Motion */
+  --ease:cubic-bezier(.25,.1,.25,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --dur:300ms;--dur-fast:160ms;--dur-slow:500ms;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text-1);font-family:var(--font);font-size:var(--text-base);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--text-1);color:var(--bg)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+#prog-bar{position:fixed;top:0;left:0;right:0;z-index:999;height:2px;background:rgba(26,20,16,.06)}
+#prog-fill{height:100%;width:0%;background:#000;transition:width .12s linear}
+#prog-label{position:fixed;top:9px;right:18px;z-index:999;font-family:var(--font-code);font-size:var(--text-xs);color:var(--text-3);letter-spacing:.08em;opacity:0;transition:opacity .3s}
+body.scrolled #prog-label{opacity:1}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--s10) var(--s5) var(--s9);position:relative;background:var(--onyx);overflow:hidden}
+.hero-canvas{position:absolute;inset:0;z-index:0;pointer-events:none}.hero-canvas canvas{width:100%;height:100%;display:block}
+.hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,transparent 20%,rgba(0,0,0,.08) 45%,rgba(0,0,0,.88) 78%,var(--onyx) 100%)}
+.hero-content{position:relative;z-index:2;max-width:720px}
+/* Logo squircle — DS pattern */
+.hero-logo{width:72px;height:72px;margin:0 auto var(--s6)}.js-active .hero-logo{opacity:0}
+.hero-logo svg{width:100%;height:100%;display:block}
+/* Welcome badge — DS r-pill */
+.welcome-tag{display:inline-flex;align-items:center;gap:var(--s2);padding:5px var(--s4) 5px 5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-pill);color:rgba(255,255,255,.6);font-size:var(--text-xs);font-weight:500;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);margin-bottom:var(--s6)}.js-active .welcome-tag{opacity:0}
+.welcome-tag-dot{width:22px;height:22px;border-radius:var(--r-squircle);background:var(--white);display:flex;align-items:center;justify-content:center}.welcome-tag-dot svg{width:11px;height:11px;fill:var(--onyx)}
+/* Title — DS Title Emphasis Rule (Light 300 + Bold 700) */
+.hero h1{font-family:var(--font);font-size:clamp(2.6rem,5.5vw,var(--text-hero));font-weight:300;color:var(--white);line-height:1.06;letter-spacing:-.04em;margin-bottom:var(--s5)}.js-active .hero h1{opacity:0}
+.hero h1 .hi{color:rgba(255,255,255,.35);font-weight:500;font-size:var(--text-xs);display:block;letter-spacing:.2em;font-family:var(--mono);text-transform:uppercase;margin-bottom:.8em}
+.hero h1 em{font-style:normal;font-weight:700;color:var(--white)}
+/* Description — Light weight */
+.hero-desc{font-size:var(--text-md);font-weight:300;color:rgba(255,255,255,.4);max-width:480px;margin:0 auto var(--s7);line-height:1.7}.js-active .hero-desc{opacity:0}
+/* Guide nav pills — DS r-pill */
+.guide-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s2);margin-bottom:var(--s7)}.js-active .guide-nav{opacity:0}
+.guide-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:var(--r-pill);font-family:var(--mono);font-size:var(--text-xs);color:rgba(255,255,255,.4);letter-spacing:.04em;cursor:pointer;transition:all .2s var(--ease);text-decoration:none}
+.guide-pill:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.3);color:var(--white)}
+.guide-pill-num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,.45)}
+/* CTA — DS btn-primary */
+.hero-cta{display:inline-flex;align-items:center;gap:var(--s3);padding:14px 36px;background:var(--white);color:var(--onyx);text-decoration:none;border-radius:var(--r-md);font-size:var(--text-sm);font-weight:700;font-family:var(--font);letter-spacing:.04em;text-transform:uppercase;transition:all .2s var(--ease);outline:none;border:2px solid var(--white)}.js-active .hero-cta{opacity:0}.hero-cta:hover{opacity:.88;transform:scale(.98)}.hero-cta svg{width:16px;height:16px}
+/* Scroll hint */
+.scroll-hint{position:absolute;bottom:var(--s6);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(255,255,255,.15);font-size:var(--text-micro);font-family:var(--mono);z-index:2;letter-spacing:.1em}.js-active .scroll-hint{opacity:0}
+.scroll-hint .aw{width:24px;height:24px;border:1px solid rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center}.scroll-hint .ar{width:7px;height:7px;border-right:1.5px solid rgba(255,255,255,.18);border-bottom:1.5px solid rgba(255,255,255,.18);transform:rotate(45deg);margin-top:-4px}
+.guide-strip{background:#000;padding:0 24px 64px;border-bottom:1px solid rgba(255,255,255,.08)}
+.guide-strip-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);border-radius:var(--r-xl);overflow:hidden;border:1px solid rgba(255,255,255,.07)}
+.gs-item{background:rgba(255,255,255,.04);padding:24px 22px;display:flex;align-items:flex-start;gap:14px}
+.gs-num{font-family:var(--mono);font-size:var(--text-xs);font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.1em;flex-shrink:0;margin-top:2px}
+.gs-title{font-size:var(--text-sm);font-weight:600;color:rgba(255,255,255,.85);margin-bottom:4px}
+.gs-desc{font-size:var(--text-xs);color:rgba(255,255,255,.28);line-height:1.55;font-family:var(--mono)}
+.guide-section{padding:var(--s9) var(--s5);position:relative}
+.guide-section:nth-child(even){background:var(--bg-alt)}
+.section-inner{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:var(--s9);align-items:center}
+.section-inner.reverse{direction:rtl}.section-inner.reverse>*{direction:ltr}
+/* Step chip — refined proportions */
+.step-chip{display:inline-flex;align-items:center;gap:var(--s2);padding:3px var(--s3) 3px 3px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-pill);margin-bottom:var(--s3)}
+.step-num{width:24px;height:24px;border-radius:var(--r-md);background:var(--accent);color:var(--accent-inv);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;font-family:var(--mono)}
+.step-label{font-size:var(--text-xs);font-weight:600;color:var(--text-2);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+/* Step instruction — subtle */
+.step-instruction{font-family:var(--mono);font-size:var(--text-micro);font-weight:400;color:var(--text-3);letter-spacing:.04em;margin-bottom:var(--s4);display:flex;align-items:center;gap:var(--s2)}.step-instruction::before{content:'→';font-size:11px;opacity:.5}
+/* Section headings — DS Title Emphasis Rule */
+.section-text h2{font-family:var(--font);font-size:clamp(1.5rem,2.8vw,var(--text-xl));font-weight:300;line-height:1.12;letter-spacing:-.03em;margin-bottom:var(--s4)}
+.section-text h2 strong{font-weight:700}
+.section-text p{font-size:var(--text-base);line-height:1.75;color:var(--text-2);margin-bottom:var(--s4)}.section-text p strong{color:var(--text-1);font-weight:600}
+/* Tip card — refined */
+.tip-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s3) var(--s4);margin-bottom:var(--s2);display:flex;gap:var(--s3);align-items:flex-start}
+.tip-card-ico{width:20px;height:20px;border-radius:var(--r-sm);background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}.tip-card-ico svg{width:10px;height:10px;fill:var(--text-3)}
+.tip-card-text{font-size:var(--text-sm);color:var(--text-2);line-height:1.6}.tip-card-text strong{color:var(--text-1);font-weight:600}
+/* Branch card — inner accent bar, monochromatic */
+.branch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s3) var(--s4) var(--s3) var(--s5);margin-bottom:var(--s2);transition:all .2s var(--ease);position:relative;overflow:hidden}
+.branch-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.branch-card:hover{border-color:var(--border-hi);transform:translateX(3px)}
+.branch-card h4{font-size:var(--text-sm);font-weight:700;margin-bottom:2px;color:var(--text-1)}.branch-card p{font-size:12px!important;color:var(--text-3)!important;margin-bottom:0!important;line-height:1.55!important}
+.phone-wrap{display:flex;justify-content:center}
+.phone{width:275px;background:#000;border-radius:38px;padding:9px;border:1px solid rgba(255,255,255,.12);position:relative;flex-shrink:0}.phone::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:104px;height:24px;background:#000;border-radius:0 0 16px 16px;z-index:10}
+.phone-screen{background:var(--wa-bg);border-radius:30px;overflow:hidden;height:562px;display:flex;flex-direction:column}
+.wa-header{background:var(--wa-panel);padding:36px 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.04);flex-shrink:0}
+.wa-ava{width:34px;height:34px;flex-shrink:0}.wa-ava svg{width:100%;height:100%;display:block}
+.wa-name{font-size:14px;font-weight:600;color:var(--wa-text)}.wa-status{font-size:11px;color:var(--wa-text-dim)}
+.wa-chat{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:5px;background:var(--wa-bg);overflow:hidden}
+.wa-bubble{max-width:88%;padding:7px 10px;border-radius:10px;font-size:12.5px;line-height:1.5;color:var(--wa-text)}.wa-bubble.in{background:var(--wa-bubble-in);align-self:flex-start;border-top-left-radius:3px}.wa-bubble.out{background:var(--wa-bubble-out);align-self:flex-end;border-top-right-radius:3px}.wa-bubble .time{font-size:9px;color:rgba(255,255,255,.35);text-align:right;margin-top:3px;font-family:var(--font-code)}.wa-bubble strong{font-weight:600}
+.panel-header{font-weight:700;font-size:13px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.panel-section-title{font-size:10px;color:var(--wa-text-dim);margin:5px 0 2px;display:flex;align-items:center;gap:4px}
+.panel-line{font-size:11px;color:rgba(255,255,255,.72);padding:1px 0}
+.panel-divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:5px 0}
+.wa-carousel{display:flex;gap:6px;overflow-x:auto;padding:3px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}.wa-carousel::-webkit-scrollbar{display:none}
+.cc{min-width:116px;max-width:116px;background:var(--wa-bubble-in);border-radius:var(--r-md);overflow:hidden;flex-shrink:0;border:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column}
+.cc-img{height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cc-body{padding:4px 7px 2px}.cc-desc{font-size:8px;color:var(--wa-text-dim);line-height:1.3;margin-bottom:3px}
+.cc-btn{display:flex;align-items:center;justify-content:center;gap:3px;padding:6px 5px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-weight:600;color:var(--wa-green-btn);margin-top:auto}
+.wa-btns{display:flex;flex-direction:column;gap:4px;margin-top:5px}
+.wa-btn{padding:8px 10px;background:transparent;border:1px solid rgba(37,211,102,.3);border-radius:var(--r-md);color:var(--wa-green);font-size:11px;font-weight:600;text-align:center}.wa-btn.active{background:rgba(37,211,102,.08);border-color:var(--wa-green-btn)}
+.wa-flow{background:#fff;border-radius:14px;margin:3px 0;overflow:hidden;flex-shrink:0}
+.wf-head{padding:12px 14px 8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}.wf-head span{font-size:13px;font-weight:700;color:#1a1a1a}.wf-head .x{font-size:17px;color:#aaa}
+.wf-bar{height:3px;background:#eee;margin:0 14px;border-radius:2px}.wf-bar-fill{height:100%;border-radius:2px}
+.wf-body{padding:12px 14px 10px}
+.wf-title{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:3px;letter-spacing:-.02em}
+.wf-sub{font-size:11px;color:#777;margin-bottom:12px;line-height:1.5}
+.wf-label{font-size:11px;color:#555;margin-bottom:3px;font-weight:500}
+.wf-radio{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:12.5px;color:#1a1a1a}
+.wf-dot{width:18px;height:18px;border-radius:50%;border:2px solid #c5c5c5;flex-shrink:0;display:flex;align-items:center;justify-content:center}.wf-dot.on{border-color:var(--wa-green-btn)}.wf-dot.on::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--wa-green-btn)}
+.wf-input{width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:13px;color:#1a1a1a;font-family:var(--font-body);background:#fff;outline:none}
+.wf-hint{font-size:9.5px;color:#d44;margin-top:4px;display:flex;align-items:center;gap:3px}
+.wf-flabel{font-size:12.5px;font-weight:700;color:#1a1a1a;margin:10px 0 5px}
+.wf-foot{padding:8px 14px 10px}
+.wf-submit{width:100%;padding:12px;border:none;border-radius:var(--r-full);font-size:14px;font-weight:600;font-family:var(--font-body);color:#fff;background:var(--wa-green-btn);cursor:pointer}.wf-submit.off{background:#e8e8e8;color:#bbb}
+.wf-brand{text-align:center;font-size:9px;color:#aaa;padding:7px 0;display:flex;align-items:center;justify-content:center;gap:3px}
+.sim-img{background:#1a1a1a;border-radius:var(--r-md);overflow:hidden;margin:3px 0}
+.sim-hdr{padding:6px 9px;display:flex;align-items:center;gap:5px}.sim-hdr span{font-size:9px;font-weight:600;color:#fff}.sim-hdr .dt{font-size:7.5px;color:rgba(255,255,255,.35);margin-left:auto;font-family:var(--font-code)}
+.sim-sub{font-size:7.5px;color:rgba(255,255,255,.4);padding:0 9px 5px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-code)}
+.sim-t{width:100%;border-collapse:collapse}.sim-t th{font-size:6.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;font-weight:600;padding:3px 4px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);font-family:var(--font-code)}.sim-t td{font-size:8px;color:rgba(255,255,255,.8);padding:3px 4px;border-bottom:1px solid rgba(255,255,255,.04)}.sim-t tr:last-child td{border-bottom:none}
+.bk{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle}
+.wa-link{color:#53BDEB;font-size:10px;word-break:break-all;text-decoration:underline}
+.wa-link-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px;border-top:1px solid rgba(255,255,255,.06);margin-top:5px;font-size:10.5px;font-weight:600;color:var(--wa-green-btn)}
+.wa-gh{background:var(--wa-panel);padding:36px 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.04);flex-shrink:0}
+.wa-gi{width:34px;height:34px;border-radius:50%;background:#fce4ec;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.gsys{background:rgba(255,255,255,.06);border-radius:7px;padding:4px 9px;font-size:9.5px;color:rgba(255,255,255,.45);text-align:center;align-self:center;margin:3px 0}
+.gmeta{background:rgba(37,211,102,.07);border-radius:7px;padding:5px 9px;font-size:9.5px;color:rgba(255,255,255,.5);text-align:center;align-self:center;margin:3px 0}
+.ginvite{background:#fff;border-radius:16px;padding:14px;margin:6px 8px;text-align:center}
+.ginvite-ico{width:40px;height:40px;border-radius:50%;background:#fce4ec;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}.ginvite-ico svg{width:20px;height:20px}
+.ginvite h4{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:3px}
+.ginvite .sub{font-size:9px;color:#888;margin-bottom:2px}.ginvite .desc{font-size:10px;color:#555;margin-bottom:10px}
+.ginvite .tag{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:#f5f5f5;border-radius:var(--r-lg);font-size:10px;color:#555}
+.aha-section{padding:var(--s9) 24px;background:#000;overflow:hidden;position:relative}
+.aha-inner{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.aha-text .step-chip{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}.aha-text .step-num{background:#000}.aha-text .step-label{color:rgba(255,255,255,.55)}
+.aha-text .step-instruction{color:var(--accent)}
+.aha-text h2{font-family:var(--font);font-size:clamp(1.5rem,2.8vw,var(--text-xl));font-weight:300;color:var(--white);line-height:1.12;letter-spacing:-.03em;margin-bottom:var(--s4)}
+.aha-text h2 strong{font-weight:700}
+.aha-text p{font-size:var(--text-base);line-height:1.78;color:rgba(255,255,255,.45);margin-bottom:var(--s4)}.aha-text p strong{color:rgba(255,255,255,.9)}
+.aha-highlight{padding:20px 22px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);border-radius:var(--r-xl)}
+.aha-number{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,4rem);font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1;display:block;margin-bottom:6px}
+.aha-number-label{font-family:var(--mono);font-size:var(--text-xs);color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase}
+.verticais-section{padding:var(--s9) 24px;background:var(--surface)}
+.verticais-inner{max-width:1060px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:56px}
+.section-eyebrow{font-family:var(--mono);font-size:var(--text-micro);font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;display:block}
+.section-header h2{font-family:var(--font);font-size:clamp(1.6rem,3vw,var(--text-2xl));font-weight:300;letter-spacing:-.04em;line-height:1.08;margin-bottom:12px}
+.section-header h2 strong{font-weight:700}
+.section-header p{font-size:var(--text-base);color:var(--text-2);max-width:500px;margin:0 auto;line-height:1.72}
+.carousel-label{font-family:var(--font-code);font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);text-align:center;margin-bottom:20px}
+.carousel-outer{position:relative;overflow:hidden;margin:0 -24px}
+.carousel-outer::before,.carousel-outer::after{content:'';position:absolute;top:0;bottom:0;width:72px;z-index:2;pointer-events:none}
+.carousel-outer::before{left:0;background:linear-gradient(90deg,var(--surface) 40%,transparent)}
+.carousel-outer::after{right:0;background:linear-gradient(-90deg,var(--surface) 40%,transparent)}
+.carousel-track{display:flex;gap:40px;width:max-content;padding:0 72px;align-items:center}
+.start-section{padding:var(--s10) var(--s5) var(--s8);background:var(--onyx);text-align:center;position:relative;overflow:hidden}
+.start-section .hero-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5}
+.start-inner{max-width:600px;margin:0 auto;position:relative;z-index:1}
+/* Logo squircle */
+.start-logo{width:56px;height:56px;margin:0 auto var(--s5)}.start-logo svg{width:100%;height:100%;display:block}
+.start-eyebrow{font-family:var(--mono);font-size:var(--text-micro);color:rgba(255,255,255,.35);letter-spacing:.2em;text-transform:uppercase;margin-bottom:var(--s4)}
+/* Title — DS Title Emphasis Rule */
+.start-section h2{font-family:var(--font);font-size:clamp(2rem,4vw,var(--text-3xl));font-weight:300;color:var(--white);letter-spacing:-.04em;line-height:1.06;margin-bottom:var(--s4)}
+.start-section h2 strong{font-weight:700}
+.start-section p{color:rgba(255,255,255,.3);font-size:var(--text-base);font-weight:300;margin-bottom:var(--s7);max-width:420px;margin-left:auto;margin-right:auto;line-height:1.75}
+/* CTA — DS btn-primary inverted */
+.start-cta{display:inline-flex;flex-direction:column;align-items:center;padding:16px 48px;background:var(--white);color:var(--onyx);text-decoration:none;border-radius:var(--r-md);font-family:var(--font);transition:all .2s var(--ease);border:2px solid var(--white)}.start-cta:hover{opacity:.88;transform:scale(.98)}
+.start-cta-main{display:flex;align-items:center;gap:var(--s3);font-size:var(--text-sm);font-weight:700;letter-spacing:.04em;text-transform:uppercase}.start-cta-main svg{width:18px;height:18px}
+.start-cta-sub{font-family:var(--mono);font-size:var(--text-micro);font-weight:400;color:var(--charcoal);opacity:.7;margin-top:4px;letter-spacing:.02em}
+/* Steps row */
+.start-steps{display:flex;justify-content:center;gap:var(--s6);margin-top:var(--s7);flex-wrap:wrap}
+.start-step{display:flex;align-items:center;gap:var(--s2);font-family:var(--mono);font-size:var(--text-xs);color:rgba(255,255,255,.25)}
+.start-step-num{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);color:rgba(255,255,255,.25);font-weight:600}
+/* Footer bar */
+.footer-bar{margin-top:var(--s9);padding-top:var(--s6);border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--s4)}
+.footer-brand{font-family:var(--mono);font-size:var(--text-micro);color:rgba(255,255,255,.12);letter-spacing:.08em}
+.footer-links{display:flex;gap:var(--s5)}
+.footer-links a{font-family:var(--mono);font-size:var(--text-micro);color:rgba(255,255,255,.18);text-decoration:none;letter-spacing:.04em;transition:color .2s}.footer-links a:hover{color:rgba(255,255,255,.5)}
+.sim-only-badge{display:inline-flex;align-items:center;gap:var(--s2);padding:5px var(--s3);margin-bottom:var(--s4);background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--r-pill);font-family:var(--mono);font-size:var(--text-micro);font-weight:500;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase}.sim-only-badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--text-3)}
+#step4 .step-num,#step5 .step-num{background:var(--accent)}
+#step4{background:var(--surface)!important}#step5{background:var(--surface)!important}
+.logo-name{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;color:var(--text-2);letter-spacing:.02em;white-space:nowrap;flex-shrink:0;padding:0 8px}
+.pcat-wrapper{display:flex;flex-direction:column;gap:0;margin-bottom:56px}
+.pcat-section{display:grid;grid-template-columns:1fr 1fr;gap:var(--s9);align-items:center;padding:var(--s7) 0;border-bottom:1px solid var(--border)}.pcat-section:last-child{border-bottom:none}
+.pcat-reverse .pcat-left{order:2}.pcat-reverse .pcat-right{order:1}
+.pcat-eyebrow{font-family:var(--mono);font-size:var(--text-micro);font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px}
+.pcat-headline{font-family:var(--font);font-size:clamp(1.55rem,2.8vw,var(--text-xl));font-weight:300;line-height:1.1;letter-spacing:-.03em;color:var(--text-1);margin-bottom:var(--s4)}
+.pcat-headline strong{font-weight:700}
+.pcat-desc{font-size:var(--text-base);line-height:1.75;color:var(--text-2);margin-bottom:var(--s5)}
+.pcat-checklist{list-style:none;display:flex;flex-direction:column;gap:10px}
+.pcat-checklist li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-2);line-height:1.5}
+.pcat-checklist li::before{content:'';width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.1);flex-shrink:0;margin-top:1px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l4 4 6-6' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:12px}
+.pcat-right{display:flex;align-items:stretch}
+.pcat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--s5);width:100%;transition:border-color .2s}
+.pcat-card:hover{border-color:var(--text-1)}
+.pcat-card-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.pcat-card-title{font-size:var(--text-sm);font-weight:700;color:var(--text-1)}
+.pcat-card-sub{font-family:var(--mono);font-size:var(--text-xs);color:var(--text-3)}
+.pcat-row{margin-bottom:16px}
+.pcat-row-info{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px}
+.pcat-row-label{font-size:var(--text-sm);font-weight:600;color:var(--text-1)}
+.pcat-row-val{font-family:var(--font-code);font-size:11px;font-weight:500;white-space:nowrap}
+.pcat-row-val.bad{color:var(--text-1)}.pcat-row-val.mid{color:var(--text-2)}.pcat-row-val.good{color:var(--text-3)}.pcat-row-val.neutral{color:var(--text-2)}
+.pcat-bar-wrap{background:var(--snow);border-radius:var(--r-pill);height:7px;overflow:hidden;margin-bottom:5px}
+.pcat-bar{height:100%;border-radius:var(--r-full);transition:width .6s var(--ease-out)}.pcat-bar.bad{background:var(--text-1)}.pcat-bar.mid{background:var(--text-2)}.pcat-bar.good{background:var(--text-3)}
+.pcat-row-note{font-family:var(--mono);font-size:var(--text-micro);color:var(--text-3)}
+.pcat-row-product{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.pcat-prod-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pcat-row-product .pcat-row-info{flex:1;flex-direction:column;gap:2px;align-items:flex-start}
+.pcat-card-total{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pcat-total-label{font-family:var(--mono);font-size:var(--text-xs);color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+.pcat-total-val{font-size:var(--text-sm);font-weight:700;color:var(--text-1);text-align:right;line-height:1.4}
+@media(max-width:900px){.pcat-section{grid-template-columns:1fr;gap:32px}.pcat-reverse .pcat-left{order:1}.pcat-reverse .pcat-right{order:2}}
+@media(max-width:768px){.section-inner,.aha-inner{grid-template-columns:1fr;gap:36px;text-align:center}.section-inner.reverse{direction:ltr}.phone{width:260px}.guide-section{padding:60px 16px}.guide-strip-inner{grid-template-columns:1fr}.verticais-section,.start-section{padding:64px 16px}}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <!-- Principal (Fundo Claro) — black squircle, white text -->
+  <symbol id="anova-logo" viewBox="0 0 200 200"><rect width="200" height="200" rx="44" fill="#000"/><text x="100" y="105" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,'SF Pro Display','Helvetica Neue',sans-serif" font-size="40" font-weight="800" letter-spacing="3" fill="#FFF">ANOVA</text></symbol>
+  <!-- Invertida (Fundo Escuro) — white squircle, black text -->
+  <symbol id="anova-logo-inv" viewBox="0 0 200 200"><rect width="200" height="200" rx="44" fill="#FFF"/><text x="100" y="105" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,'SF Pro Display','Helvetica Neue',sans-serif" font-size="40" font-weight="800" letter-spacing="3" fill="#000">ANOVA</text></symbol>
+  <!-- Small — for WhatsApp avatar -->
+  <symbol id="anova-sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000"/><text x="50" y="53" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,'SF Pro Display','Helvetica Neue',sans-serif" font-size="20" font-weight="800" letter-spacing="1.5" fill="#FFF">ANOVA</text></symbol>
+  <symbol id="ico-shield" viewBox="0 0 200 100"><rect width="200" height="100" fill="#2a2a2a"/><path d="M100 18l-28 12v20c0 18 28 30 28 30s28-12 28-30V30z" fill="none" stroke="#eee" stroke-width="2.5"/><path d="M90 52l7 7 13-14" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="wa-ico" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.638l4.783-1.344A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.137 0-4.146-.587-5.863-1.607l-.408-.249-3.085.867.825-3.217-.261-.415A9.946 9.946 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></symbol>
+  <symbol id="check-ico" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div id="prog-bar"><div id="prog-fill"></div></div>
+<div id="prog-label">ACESSO</div>
+
+<section class="hero" id="hero">
+  <div class="hero-canvas"><canvas id="heroCanvas"></canvas></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-logo"><svg><use href="#anova-logo-inv"/></svg></div>
+    <div class="welcome-tag"><div class="welcome-tag-dot"><svg><use href="#check-ico"/></svg></div>Guia do Parceiro · Orquestrador</div>
+    <h1><span class="hi">Seu guia do Orquestrador</span>Este é o seu<br><em>manual de operação</em></h1>
+    <p class="hero-desc">Consulte sempre que precisar entender uma etapa, revisar um fluxo ou tirar uma dúvida sobre o que fazer a seguir.</p>
+    <div class="guide-nav">
+      <a href="#step1" class="guide-pill"><span class="guide-pill-num">1</span>Acesso</a>
+      <a href="#step2" class="guide-pill"><span class="guide-pill-num">2</span>Painel</a>
+      <a href="#step3" class="guide-pill"><span class="guide-pill-num">3</span>Produtos</a>
+      <a href="#step4" class="guide-pill"><span class="guide-pill-num">4</span>Simular</a>
+      <a href="#step5" class="guide-pill"><span class="guide-pill-num">5</span>Resultado</a>
+      <a href="#step6" class="guide-pill"><span class="guide-pill-num">6</span>Proposta</a>
+      <a href="#step7" class="guide-pill"><span class="guide-pill-num">7</span>Grupo</a>
+      <a href="#step8" class="guide-pill"><span class="guide-pill-num">8</span>Comissão</a>
+    </div>
+    <a href="#step1" class="hero-cta"><svg fill="currentColor"><use href="#check-ico"/></svg>Ver as etapas</a>
+  </div>
+  <div class="scroll-hint" id="scrollHint"><span>SCROLL</span><div class="aw"><div class="ar"></div></div></div>
+</section>
+
+<div class="guide-strip">
+  <div class="guide-strip-inner" id="guideStrip">
+    <div class="gs-item"><span class="gs-num">01</span><div><div class="gs-title">Entenda como operar</div><div class="gs-desc">8 etapas com exemplos reais do WhatsApp, do acesso à comissão</div></div></div>
+    <div class="gs-item"><span class="gs-num">02</span><div><div class="gs-title">Conheça as categorias</div><div class="gs-desc">10 produtos em 4 categorias com taxas, parceiros e comissões</div></div></div>
+    <div class="gs-item"><span class="gs-num">03</span><div><div class="gs-title">Comece a operar</div><div class="gs-desc">Abra o WhatsApp e envie "acesso" para começar a ganhar</div></div></div>
+  </div>
+</div>
+
+<!-- ETAPA 1 -->
+<section class="guide-section" id="step1" data-step="1" data-label="ACESSO">
+  <div class="section-inner">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">1</div><span class="step-label">Acesso</span></div>
+      <div class="step-instruction">Mande "acesso" para o WhatsApp da Anova</div>
+      <h2>Como entrar no <strong>Orquestrador</strong></h2>
+      <p>O Orquestrador funciona inteiramente pelo WhatsApp. Para acessar, basta enviar a palavra <strong>"acesso"</strong> para o número da Anova Investimentos. Clique em <strong>Confirmar acesso</strong> quando a mensagem aparecer. Um formulário seguro abrirá para confirmar sua identidade com os <strong>4 primeiros dígitos do seu CPF</strong>.</p>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text">O acesso é pessoal e intransferível. Você usará o mesmo número de WhatsApp cadastrado no processo de parceria.</div></div>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text">Leva menos de 30 segundos. Não é necessário senha, app ou nenhum outro sistema.</div></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble out">acesso<div class="time">10:30</div></div>
+        <div class="wa-bubble in"><strong>Confirmar acesso</strong><br>Para segurança dos dados, confirme sua identidade.<div class="wa-btns"><div class="wa-btn active">🔐 Confirmar Acesso</div></div><div class="time">10:30</div></div>
+        <div class="wa-flow">
+          <div class="wf-head"><span>Confirmação de identidade</span><span class="x">✕</span></div>
+          <div class="wf-bar"><div class="wf-bar-fill" style="width:66%;background:var(--wa-green-btn)"></div></div>
+          <div class="wf-body" style="text-align:center;padding:10px 14px 8px">
+            <div style="border-radius:var(--r-md);overflow:hidden;margin-bottom:8px"><svg width="100%" height="56"><use href="#ico-shield"/></svg></div>
+            <div style="font-size:11.5px;color:#555;text-align:left;margin-bottom:7px">Digite os 4 primeiros números do CPF.</div>
+            <div class="wf-input" style="letter-spacing:6px;font-size:14px">••••</div>
+          </div>
+          <div class="wf-foot"><button class="wf-submit" style="padding:11px;font-size:13px">Confirmar</button></div>
+          <div class="wf-brand">Gerenciada por Anova Investimentos. <span style="color:var(--wa-green-btn)">Saiba mais</span></div>
+        </div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 2 -->
+<section class="guide-section" id="step2" data-step="2" data-label="PAINEL">
+  <div class="section-inner reverse">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">2</div><span class="step-label">Painel</span></div>
+      <div class="step-instruction">Leia seu painel e escolha a categoria que vai trabalhar</div>
+      <h2>Seu painel de <strong>comissões</strong> e categorias</h2>
+      <p>Após o acesso, o Orquestrador exibe o <strong>painel de comissões separado por produto</strong> — Proteção e Benefícios, Crédito Pessoal, Imobiliário, Consórcio e Veículos.</p>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text"><strong>Deslize o carrossel</strong> no WhatsApp para ver todas as categorias.</div></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble in" style="max-width:94%"><div class="panel-header"><span>📊</span> Painel de comissões</div><div class="panel-section-title"><span>💰</span> Por produto</div><div class="panel-line">- Proteção e Benefícios: R$</div><div class="panel-line">- Crédito Pessoal: R$</div><div class="panel-line">- Imobiliário: R$</div><div class="panel-line">- Consórcio: R$</div><div class="panel-line">- Veículos: R$</div><hr class="panel-divider"><div style="font-size:10.5px;color:var(--wa-text-dim);margin-top:3px">Escolha um produto para iniciar:</div><div class="time">12:16</div></div>
+        <div style="padding:2px 0"><div class="wa-carousel" id="step2Carousel">
+          <div class="cc"><div class="cc-img" style="background:#e8e8e8;font-size:28px;display:flex;align-items:center;justify-content:center">🛡️</div><div class="cc-body"><div class="cc-desc">Seguros e proteção financeira.</div></div><div class="cc-btn">↗ Proteção</div></div>
+          <div class="cc"><div class="cc-img" style="background:#1a1a1a;font-size:28px;display:flex;align-items:center;justify-content:center">💰</div><div class="cc-body"><div class="cc-desc">Crédito rápido e alinhado.</div></div><div class="cc-btn">↗ Crédito</div></div>
+          <div class="cc"><div class="cc-img" style="background:#d8d4cc;font-size:28px;display:flex;align-items:center;justify-content:center">🏠</div><div class="cc-body"><div class="cc-desc">Financiamento imobiliário.</div></div><div class="cc-btn">↗ Imobiliário</div></div>
+          <div class="cc"><div class="cc-img" style="background:#c8c4be;font-size:28px;display:flex;align-items:center;justify-content:center">🚗</div><div class="cc-body"><div class="cc-desc">Financiamento veicular.</div></div><div class="cc-btn">↗ Veículos</div></div>
+          <div class="cc"><div class="cc-img" style="background:#1a1a1a;font-size:28px;display:flex;align-items:center;justify-content:center">📋</div><div class="cc-body"><div class="cc-desc">Consórcio planejado.</div></div><div class="cc-btn">↗ Consórcio</div></div>
+        </div></div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 3 -->
+<section class="guide-section" id="step3" data-step="3" data-label="PRODUTO">
+  <div class="section-inner">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">3</div><span class="step-label">Produto</span></div>
+      <div class="step-instruction">Toque no card da categoria escolhida para ver os tipos disponíveis</div>
+      <h2>Selecione o tipo de <strong>produto</strong></h2>
+      <p>Ao tocar em uma categoria, os <strong>tipos de produto disponíveis</strong> aparecem em um novo carrossel. Cada opção tem um fluxo e parceiros específicos.</p>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text"><strong>Seguro de Vida:</strong> cobertura em vida e em caso de morte protege quem depende financeiramente do seu cliente.</div></div>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text"><strong>Plano de Saúde:</strong> acesso a planos com rede credenciada de diversas operadoras.</div></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble in">Você selecionou <strong>🛡️ Proteção e Benefício</strong><br><br>Escolha o tipo:<div class="time">10:32</div></div>
+        <div style="padding:2px 0"><div class="wa-carousel">
+          <div class="cc"><div class="cc-img" style="background:#0a0a0a;font-size:24px;display:flex;align-items:center;justify-content:center">🛡️</div><div class="cc-body"><div class="cc-desc">Cobertura em vida e em caso de morte</div></div><div class="cc-btn">↗ Seguro de Vida</div></div>
+          <div class="cc"><div class="cc-img" style="background:#e8e8e8;font-size:24px;display:flex;align-items:center;justify-content:center">🏥</div><div class="cc-body"><div class="cc-desc">Acesso a Planos de saúde com rede credenciada</div></div><div class="cc-btn">↗ Plano de Saúde</div></div>
+        </div></div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 4 -->
+<section class="guide-section" id="step4" data-step="4" data-label="SIMULAÇÃO">
+  <div class="section-inner reverse">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">4</div><span class="step-label">Simulação</span></div>
+      <div class="step-instruction">Exclusivo para Financiamento Imobiliário e Financiamento de Veículos</div>
+      <div class="sim-only-badge">Exclusivo Para Financiamento</div>
+      <h2>Simule antes de enviar a <strong>proposta</strong></h2>
+      <p>As etapas 4 e 5 são um <strong>fluxo à parte</strong>, disponível apenas para <strong>Financiamento Imobiliário</strong> e <strong>Financiamento de Veículos</strong>.</p>
+      <div class="branch-card"><h4>Simular primeiro</h4><p>Indicado quando o cliente ainda não sabe qual banco escolher</p></div>
+      <div class="branch-card"><h4>Ir direto para proposta</h4><p>Use quando a condição já está definida com o cliente</p></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat" style="padding:7px 6px;gap:3px">
+        <div class="wa-flow" style="margin:0">
+          <div class="wf-head"><span>Financiamento</span><span class="x">✕</span></div>
+          <div class="wf-bar"><div class="wf-bar-fill" style="width:40%;background:#2563EB"></div></div>
+          <div class="wf-body" style="padding:11px 13px">
+            <div class="wf-title" style="font-size:14px">Financiamento Veicular</div>
+            <div class="wf-sub" style="margin-bottom:9px">Preencha para acessar a tabela de valores.</div>
+            <div class="wf-label">Tipo de Veículos:</div>
+            <div class="wf-radio" style="padding:5px 0"><div class="wf-dot"></div> Leves</div>
+            <div class="wf-radio" style="padding:5px 0"><div class="wf-dot on"></div> Duas rodas</div>
+            <div class="wf-label">Condição:</div>
+            <div class="wf-radio" style="padding:4px 0"><div class="wf-dot"></div> Novo</div>
+            <div class="wf-radio" style="padding:4px 0"><div class="wf-dot"></div> Usado</div>
+            <div class="wf-flabel" style="margin:8px 0 5px">Valor do Veículo</div>
+            <input class="wf-input" style="padding:8px 12px;font-size:12px" value="25000" disabled>
+            <div class="wf-hint">⚠ Valor mínimo de R$ 5.000,00</div>
+          </div>
+          <div class="wf-foot" style="padding:7px 13px 9px"><button class="wf-submit off" style="padding:10px;font-size:13px">Continuar</button></div>
+        </div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 5 -->
+<section class="guide-section" id="step5" data-step="5" data-label="RESULTADO">
+  <div class="section-inner">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">5</div><span class="step-label">Resultado</span></div>
+      <div class="sim-only-badge">Exclusivo Para Financiamento</div>
+      <h2>Resultado da <strong>simulação</strong></h2>
+      <p>Você recebe uma <strong>tabela comparativa</strong> com condições dos principais bancos: prazo, taxa de juros, custo efetivo e valor da primeira parcela.</p>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text">Use o botão <strong>"Nova Simulação"</strong> para ajustar valores e comparar cenários diferentes.</div></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble in" style="max-width:97%;padding:4px">
+          <div class="sim-img">
+            <div class="sim-hdr"><span>🏠</span><span>Simulação Financiamento Imobiliário</span><div class="dt">18/03/2026</div></div>
+            <div class="sim-sub">Resultados</div>
+            <table class="sim-t"><tr><th>Banco</th><th>Prazo</th><th>Taxa</th><th>CET</th><th>1ª Parc.</th></tr>
+            <tr><td><span class="bk" style="background:#CC092F"></span>Bradesco</td><td>420</td><td>12,30%</td><td>12,65%</td><td>R$7.874</td></tr>
+            <tr><td><span class="bk" style="background:#003DA5"></span>Itaú</td><td>420</td><td>12,05%</td><td>12,49%</td><td>R$7.830</td></tr>
+            <tr><td><span class="bk" style="background:#000"></span>Inter</td><td>420</td><td>12,00%</td><td>12,45%</td><td>R$7.252</td></tr>
+            <tr><td><span class="bk" style="background:#EC0000"></span>Santander</td><td>420</td><td>11,99%</td><td>12,40%</td><td>R$7.796</td></tr>
+            <tr><td><span class="bk" style="background:#005CA9"></span>Caixa</td><td>420</td><td>10,65%</td><td>11,02%</td><td>R$7.096</td></tr></table>
+          </div><div class="time" style="padding:2px 6px">16:45</div>
+        </div>
+        <div class="wa-bubble in" style="font-size:11.5px">Aqui está o resultado.<div class="wa-btns"><div class="wa-btn active">🔄 Nova Simulação</div><div class="wa-btn">📄 Ir para Proposta</div></div><div class="time">16:45</div></div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 6 -->
+<section class="guide-section" id="step6" data-step="6" data-label="PROPOSTA">
+  <div class="section-inner reverse">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">6</div><span class="step-label">Proposta</span></div>
+      <h2>Envio da <strong>proposta</strong></h2>
+      <p>Você escolhe a forma mais adequada para cada situação. Ao finalizar, o Orquestrador cria automaticamente o <strong>grupo de atendimento</strong>.</p>
+      <div class="branch-card"><h4>Você preenche</h4><p>Mais ágil. Use quando você está com o cliente ao lado.</p></div>
+      <div class="branch-card"><h4>Cliente preenche</h4><p>Use quando o cliente está remoto ou prefere preencher no próprio ritmo.</p></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble in">✅ <strong>Proposta enviada com sucesso!</strong><br><br>Clique em participar do grupo para dar continuidade.<div style="margin-top:5px"><div class="wa-link">https://chat.whatsapp.com/JIPo1Yi...</div></div><div class="wa-link-btn">👥 Participar do grupo</div><div class="time">16:52</div></div>
+        <div class="wa-bubble out">Obrigado!<div class="time">16:53</div></div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 7 -->
+<section class="guide-section" id="step7" data-step="7" data-label="GRUPO">
+  <div class="section-inner">
+    <div class="section-text">
+      <div class="step-chip"><div class="step-num">7</div><span class="step-label">Grupo</span></div>
+      <h2>O grupo de <strong>atendimento</strong></h2>
+      <p>Assim que a proposta é enviada, o Orquestrador cria automaticamente um grupo no WhatsApp e envia os links de convite para cada participante.</p>
+      <div class="branch-card"><h4>👤 Você (originador)</h4><p>Apresenta o cliente ao especialista e acompanha o andamento.</p></div>
+      <div class="branch-card"><h4>👤 Seu cliente</h4><p>Recebe um link separado e entra no grupo diretamente.</p></div>
+      <div class="branch-card"><h4>👤 Especialista Anova</h4><p>Assume a condução técnica até a conclusão.</p></div>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text"><strong>O Orquestrador permanece no grupo</strong> como camada de governança — registra e audita todas as interações.</div></div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-gh"><div class="wa-gi">👥</div><div><div class="wa-name">Seguro de Vida Bruno</div><div class="wa-status">4 participantes</div></div></div>
+      <div class="wa-chat">
+        <div class="gsys">qui., 12 de mar.</div>
+        <div class="gmeta">Anova Investimentos usa um serviço seguro da Meta para gerenciar esta conversa.</div>
+        <div class="ginvite">
+          <div class="ginvite-ico"><svg viewBox="0 0 24 24" fill="#E91E63"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+          <h4>Você entrou usando um link de convite</h4>
+          <div class="sub">Grupo criado automaticamente pelo Orquestrador</div>
+          <div class="desc">Atendimento Seguro de Vida · Bruno</div>
+          <div class="tag">🏷️ 4 participantes: você, cliente, especialista e Orquestrador</div>
+        </div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- ETAPA 8 -->
+<section class="aha-section" id="step8" data-step="8" data-label="COMISSÃO">
+  <div class="aha-inner">
+    <div class="aha-text">
+      <div class="step-chip"><div class="step-num">8</div><span class="step-label">Comissão</span></div>
+      <h2>Sua <strong>comissão</strong> atualizada em tempo real</h2>
+      <p>Quando a venda é concluída, no <strong>dia seguinte</strong> o Orquestrador atualiza automaticamente o seu painel de comissões.</p>
+      <div class="tip-card"><div class="tip-card-ico"><svg><use href="#check-ico"/></svg></div><div class="tip-card-text"><strong>O que acontece após a proposta:</strong> o especialista acompanha aprovação e assinatura com o cliente. Quando concluída, o painel atualiza automaticamente.</div></div>
+      <div class="aha-highlight">
+        <span class="aha-number" id="ahaCounter">R$ 0</span>
+        <span class="aha-number-label">comissão projetada Proteção e Benefícios</span>
+      </div>
+    </div>
+    <div class="phone-wrap"><div class="phone"><div class="phone-screen">
+      <div class="wa-header"><div class="wa-ava"><svg><use href="#anova-sm"/></svg></div><div><div class="wa-name">Anova Investimentos</div><div class="wa-status">online</div></div></div>
+      <div class="wa-chat">
+        <div class="wa-bubble in">🎉 <strong>Negociação concluída!</strong><br><br>A proposta de <strong>Bruno</strong> — Seguro de Vida foi finalizada com sucesso.<div class="time">14:20</div></div>
+        <div class="wa-bubble in" style="max-width:95%"><div class="panel-header"><span>📊</span> Painel de comissões</div><div class="panel-section-title"><span>💰</span> Por produto</div><div class="panel-line">- Proteção e Benefícios: <span style="color:var(--wa-green)">R$ 1.620,00</span></div><div class="panel-line">- Crédito Pessoal: R$</div><div class="panel-line">- Imobiliário: R$</div><div class="panel-line">- Consórcio: R$</div><div class="panel-line">- Veículos: R$</div><hr class="panel-divider"><div class="panel-section-title"><span>📅</span> Mês anterior: R$</div><div class="time">14:20</div></div>
+      </div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- PORTFÓLIO -->
+<section class="verticais-section" id="verticais">
+  <div class="verticais-inner">
+    <div class="section-header a-reveal">
+      <span class="section-eyebrow">Portfólio disponível</span>
+      <h2>O que você pode <strong>oferecer</strong></h2>
+      <p>Conheça os 10 produtos disponíveis no Orquestrador, organizados por categoria.</p>
+    </div>
+    <div class="pcat-wrapper a-reveal">
+      <div class="pcat-section">
+        <div class="pcat-left">
+          <div class="pcat-eyebrow">Empréstimos</div>
+          <h3 class="pcat-headline"><strong>Crédito</strong> com garantia.<br>Taxas que fazem <strong>sentido.</strong></h3>
+          <p class="pcat-desc">Dois produtos que transformam o que o cliente já tem — imóvel ou veículo — em crédito com taxas muito abaixo do mercado.</p>
+          <ul class="pcat-checklist"><li>Taxa a partir de 0,99% a.m. + IPCA no EGI</li><li>Taxa a partir de 1,29% a.m. no EGV</li><li>Até 90% do valor do imóvel ou veículo em crédito</li><li>Aprovação rápida, 100% digital</li></ul>
+        </div>
+        <div class="pcat-right"><div class="pcat-card">
+          <div class="pcat-card-header"><span class="pcat-card-title">Comparativo de taxas</span><span class="pcat-card-sub">Crédito R$ 100.000</span></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Crédito Pessoal</span><span class="pcat-row-val bad">a partir de 3,5% a.m.</span></div><div class="pcat-bar-wrap"><div class="pcat-bar bad" style="width:100%"></div></div><div class="pcat-row-note">Sem garantia · maior risco, maior custo</div></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">EGV · Garantia de Veículo</span><span class="pcat-row-val mid">a partir de 1,29% a.m.</span></div><div class="pcat-bar-wrap"><div class="pcat-bar mid" style="width:37%"></div></div></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">EGI · Garantia de Imóvel</span><span class="pcat-row-val good">a partir de 0,99% a.m.</span></div><div class="pcat-bar-wrap"><div class="pcat-bar good" style="width:28%"></div></div></div>
+          <div class="pcat-card-total"><span class="pcat-total-label">Economia em juros</span><span class="pcat-total-val">até 72% menor que crédito pessoal</span></div>
+        </div></div>
+      </div>
+      <div class="pcat-section pcat-reverse">
+        <div class="pcat-left">
+          <div class="pcat-eyebrow">Financiamentos</div>
+          <h3 class="pcat-headline">A casa e o carro que o cliente quer, com as <strong>condições certas.</strong></h3>
+          <p class="pcat-desc">Comparamos propostas de múltiplos bancos em segundos.</p>
+          <ul class="pcat-checklist"><li>Financiamento Imobiliário a partir de 0,96% a.m. + TR</li><li>Aceita FGTS e portabilidade</li><li>Financiamento de até 90% do valor do veículo</li><li>Comparativo entre Bradesco, Itaú, Inter, Santander e Caixa</li></ul>
+        </div>
+        <div class="pcat-right"><div class="pcat-card">
+          <div class="pcat-card-header"><span class="pcat-card-title">Simulação Imobiliária</span><span class="pcat-card-sub">Imóvel R$ 500.000 · 420 meses</span></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Bradesco</span><span class="pcat-row-val bad">12,30% a.a. · R$ 7.874/mês</span></div><div class="pcat-bar-wrap"><div class="pcat-bar bad" style="width:100%"></div></div></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Santander</span><span class="pcat-row-val mid">11,99% a.a. · R$ 7.796/mês</span></div><div class="pcat-bar-wrap"><div class="pcat-bar mid" style="width:90%"></div></div></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Caixa</span><span class="pcat-row-val good">10,65% a.a. · R$ 7.096/mês</span></div><div class="pcat-bar-wrap"><div class="pcat-bar good" style="width:74%"></div></div></div>
+          <div class="pcat-card-total"><span class="pcat-total-label">Diferença entre maior e menor</span><span class="pcat-total-val">R$ 778/mês · R$ 326.760 em 35 anos</span></div>
+        </div></div>
+      </div>
+      <div class="pcat-section">
+        <div class="pcat-left">
+          <div class="pcat-eyebrow">Consórcio</div>
+          <h3 class="pcat-headline">Realize planos grandes <strong>sem pagar juros.</strong></h3>
+          <p class="pcat-desc">Consórcio para imóveis, veículos e serviços. Sem juros, apenas taxa de administração.</p>
+          <ul class="pcat-checklist"><li>Sem juros. Apenas taxa de administração</li><li>Cartas de imóvel de até R$ 1.000.000</li><li>Imóveis, veículos e serviços em um só fluxo</li><li>Até 200 parcelas no consórcio de imóveis</li></ul>
+        </div>
+        <div class="pcat-right"><div class="pcat-card">
+          <div class="pcat-card-header"><span class="pcat-card-title">Comparativo de custo total</span><span class="pcat-card-sub">Carta de R$ 500.000</span></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Financiamento tradicional</span><span class="pcat-row-val bad">+R$ 460.000 em juros</span></div><div class="pcat-bar-wrap"><div class="pcat-bar bad" style="width:100%"></div></div></div>
+          <div class="pcat-row"><div class="pcat-row-info"><span class="pcat-row-label">Consórcio de Imóveis</span><span class="pcat-row-val good">R$ 0 em juros</span></div><div class="pcat-bar-wrap"><div class="pcat-bar good" style="width:8%"></div></div></div>
+          <div class="pcat-card-total"><span class="pcat-total-label">Economia total estimada</span><span class="pcat-total-val">R$ 460.000 sem pagar um real de juros</span></div>
+        </div></div>
+      </div>
+      <div class="pcat-section pcat-reverse">
+        <div class="pcat-left">
+          <div class="pcat-eyebrow">Seguros e Previdência</div>
+          <h3 class="pcat-headline"><strong>Proteja</strong> o que importa e planeje o <strong>amanhã.</strong></h3>
+          <p class="pcat-desc">Seguros de vida, residencial e previdência privada com as maiores seguradoras do Brasil.</p>
+          <ul class="pcat-checklist"><li>Seguro de Vida Individual com cobertura personalizável</li><li>Seguro Residencial contra incêndio, roubo e danos</li><li>Previdência PGBL e VGBL com benefício tributário</li><li>MAG, Allianz, Zurich, ICATU, Porto e Prudential</li></ul>
+        </div>
+        <div class="pcat-right"><div class="pcat-card">
+          <div class="pcat-card-header"><span class="pcat-card-title">Produtos disponíveis</span><span class="pcat-card-sub">6 seguradoras parceiras</span></div>
+          <div class="pcat-row pcat-row-product"><div class="pcat-prod-dot" style="background:var(--text-2)"></div><div class="pcat-row-info"><span class="pcat-row-label">Seguro de Vida Individual</span><span class="pcat-row-val neutral">MAG · Allianz · Zurich · ICATU · Porto · Prudential</span></div></div>
+          <div class="pcat-row pcat-row-product"><div class="pcat-prod-dot" style="background:var(--text-2)"></div><div class="pcat-row-info"><span class="pcat-row-label">Seguro Residencial</span><span class="pcat-row-val neutral">Allianz · Porto · Zurich · Mapfre · HDI</span></div></div>
+          <div class="pcat-row pcat-row-product"><div class="pcat-prod-dot" style="background:var(--text-2)"></div><div class="pcat-row-info"><span class="pcat-row-label">Previdência Privada</span><span class="pcat-row-val neutral">MAG · ICATU · Porto · PGBL e VGBL disponíveis</span></div></div>
+          <div class="pcat-card-total"><span class="pcat-total-label">Plano de Saúde</span><span class="pcat-total-val">Diversas operadoras com rede credenciada</span></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="carousel-label a-reveal" style="margin-top:56px">Instituições financeiras parceiras</div>
+    <div class="carousel-outer a-reveal">
+      <div class="carousel-track" id="carouselTrack"><div class="logo-name">Bradesco</div><div class="logo-name">Itaú</div><div class="logo-name">Santander</div><div class="logo-name">Caixa</div><div class="logo-name">Inter</div><div class="logo-name">BV</div><div class="logo-name">C6 Bank</div><div class="logo-name">Creditas</div><div class="logo-name">CashMe</div><div class="logo-name">Safra</div><div class="logo-name">Porto Seguro</div><div class="logo-name">Omni</div><div class="logo-name">Rodobens</div><div class="logo-name">Embracon</div><div class="logo-name">MAG</div><div class="logo-name">Allianz</div><div class="logo-name">Zurich</div><div class="logo-name">Icatu</div><div class="logo-name">Mapfre</div><div class="logo-name">HDI</div><div class="logo-name">Prudential</div><div class="logo-name">Bradesco</div><div class="logo-name">Itaú</div><div class="logo-name">Santander</div><div class="logo-name">Caixa</div><div class="logo-name">Inter</div><div class="logo-name">BV</div><div class="logo-name">C6 Bank</div><div class="logo-name">Creditas</div><div class="logo-name">CashMe</div><div class="logo-name">Safra</div><div class="logo-name">Porto Seguro</div><div class="logo-name">Omni</div><div class="logo-name">Rodobens</div><div class="logo-name">Embracon</div><div class="logo-name">MAG</div><div class="logo-name">Allianz</div><div class="logo-name">Zurich</div><div class="logo-name">Icatu</div><div class="logo-name">Mapfre</div><div class="logo-name">HDI</div><div class="logo-name">Prudential</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- START / FOOTER -->
+<section class="start-section">
+  <div class="hero-canvas"><canvas id="footerCanvas"></canvas></div>
+  <div class="start-inner">
+    <div class="start-logo"><svg><use href="#anova-logo-inv"/></svg></div>
+    <div class="start-eyebrow">Pronto para operar</div>
+    <h2>Abra sua primeira<br><strong>negociação agora</strong></h2>
+    <p>Você conhece o fluxo, os produtos e os parceiros. A próxima etapa é acessar o Orquestrador e colocar em prática.</p>
+    <a href="https://wa.me/551150431533?text=acesso" target="_blank" class="start-cta">
+      <span class="start-cta-main"><svg fill="currentColor"><use href="#wa-ico"/></svg>Acessar o Orquestrador</span>
+      <span class="start-cta-sub">envie "acesso" · menos de 30 segundos</span>
+    </a>
+    <div class="start-steps">
+      <div class="start-step"><span class="start-step-num">1</span>Envie "acesso"</div>
+      <div class="start-step"><span class="start-step-num">2</span>Confirme seu CPF</div>
+      <div class="start-step"><span class="start-step-num">3</span>Escolha o produto</div>
+      <div class="start-step"><span class="start-step-num">4</span>Inicie o atendimento</div>
+    </div>
+    <div class="footer-bar">
+      <span class="footer-brand">© 2026 ANOVA INVESTIMENTOS</span>
+      <div class="footer-links">
+        <a href="#">Termos</a>
+        <a href="#">Privacidade</a>
+        <a href="#">Suporte</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.documentElement.classList.add('js-active');
+window.addEventListener('error',function(e){if(e.filename&&e.filename.indexOf('animejs')>=0){document.querySelectorAll('.section-inner,.aha-inner').forEach(function(el){el.style.opacity='1'});document.querySelectorAll('.hero-logo,.welcome-tag,.hero h1,.hero-desc,.guide-nav,.hero-cta,.scroll-hint').forEach(function(el){el.style.opacity='1';el.style.transform='none'})}},true);
+(function(){var c=document.getElementById('heroCanvas');if(!c)return;var ctx=c.getContext('2d'),W,H,nodes=[],mouse={x:-9999,y:-9999};function resize(){var r=c.parentElement.getBoundingClientRect();W=c.width=r.width*devicePixelRatio;H=c.height=r.height*devicePixelRatio;c.style.width=r.width+'px';c.style.height=r.height+'px';ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}resize();window.addEventListener('resize',resize);var hero=c.parentElement.parentElement;hero.addEventListener('mousemove',function(e){var r=hero.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top});hero.addEventListener('mouseleave',function(){mouse.x=-9999;mouse.y=-9999});var rW=function(){return W/devicePixelRatio},rH=function(){return H/devicePixelRatio};for(var i=0;i<55;i++){var isHub=i<6;nodes.push({x:Math.random()*rW(),y:Math.random()*rH(),vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.12-.03,r:isHub?2.5:1.2,o:isHub?.55:.25,hub:isHub})}function draw(){ctx.clearRect(0,0,rW(),rH());nodes.forEach(function(p){p.x+=p.vx;p.y+=p.vy;var dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){var f=.008*(1-d/100);p.vx-=dx*f;p.vy-=dy*f}if(p.x<-10)p.x=rW()+10;if(p.x>rW()+10)p.x=-10;if(p.y<-10)p.y=rH()+10;if(p.y>rH()+10)p.y=-10;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+p.o+')';ctx.fill();if(p.hub){ctx.beginPath();ctx.moveTo(p.x-7,p.y);ctx.lineTo(p.x+7,p.y);ctx.moveTo(p.x,p.y-7);ctx.lineTo(p.x,p.y+7);ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=.5;ctx.stroke()}});for(var i=0;i<nodes.length;i++){for(var j=i+1;j<nodes.length;j++){var dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<110){var a=.06*(1-d/110)*(nodes[i].hub||nodes[j].hub?.8:.4);ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.strokeStyle='rgba(255,255,255,'+a+')';ctx.lineWidth=.4;ctx.stroke()}}}requestAnimationFrame(draw)}draw()})();
+(function(){var tl=anime.timeline({easing:'easeOutExpo'});tl.add({targets:'.hero-logo',opacity:[0,1],translateY:[24,0],duration:900}).add({targets:'.welcome-tag',opacity:[0,1],translateY:[16,0],duration:800},'-=600').add({targets:'.hero h1',opacity:[0,1],translateY:[28,0],duration:900},'-=550').add({targets:'.hero-desc',opacity:[0,1],translateY:[18,0],duration:800},'-=550').add({targets:'.guide-nav',opacity:[0,1],translateY:[14,0],duration:700},'-=450').add({targets:'.hero-cta',opacity:[0,1],translateY:[18,0],scale:[.97,1],duration:800},'-=400').add({targets:'#scrollHint',opacity:[0,.65],translateY:[8,0],duration:600},'-=200')})();
+anime({targets:'#scrollHint',translateY:['0px','9px'],direction:'alternate',loop:true,duration:1900,easing:'easeInOutSine',delay:2200});
+var steps=document.querySelectorAll('[data-step]'),progFill=document.getElementById('prog-fill'),progLabel=document.getElementById('prog-label');function updateProgress(){var s=window.scrollY,d=document.documentElement.scrollHeight-window.innerHeight;progFill.style.width=Math.min(100,(s/d)*100)+'%';document.body.classList.toggle('scrolled',s>80);var cur='GUIA';steps.forEach(function(el){if(el.getBoundingClientRect().top<window.innerHeight*.5)cur=el.dataset.label||cur});progLabel.textContent=cur}window.addEventListener('scroll',updateProgress,{passive:true});
+var revealed=new Set();function reveal(el,opts){if(revealed.has(el))return;revealed.add(el);anime(Object.assign({targets:el,opacity:[0,1],duration:800,easing:'easeOutQuart'},opts||{}))}
+var sectObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting||revealed.has(en.target))return;var isRev=en.target.classList.contains('reverse');reveal(en.target,{translateX:[isRev?50:-50,0]})})},{threshold:.08,rootMargin:'0px 0px -50px 0px'});document.querySelectorAll('.section-inner,.aha-inner').forEach(function(el){el.style.opacity='0';sectObs.observe(el)});
+var genObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting)return;reveal(en.target,{translateY:[28,0]})})},{threshold:.06,rootMargin:'0px 0px -30px 0px'});document.querySelectorAll('.a-reveal').forEach(function(el){el.style.opacity='0';el.style.transform='translateY(28px)';genObs.observe(el)});
+var stripObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting||revealed.has(en.target))return;revealed.add(en.target);anime({targets:en.target.querySelectorAll('.gs-item'),opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),duration:700,easing:'easeOutQuart'})})},{threshold:.2});var strip=document.getElementById('guideStrip');if(strip)stripObs.observe(strip);
+var prodsObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting||revealed.has(en.target))return;revealed.add(en.target);anime({targets:en.target.querySelectorAll('.pcat-section'),opacity:[0,1],translateY:[24,0],delay:anime.stagger(80,{start:80}),duration:700,easing:'easeOutQuart'});anime({targets:en.target,opacity:[0,1],duration:1})})},{threshold:.05});var prodsGrid=document.querySelector('.pcat-wrapper');if(prodsGrid)prodsObs.observe(prodsGrid);
+var ahaObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting||revealed.has(en.target))return;revealed.add(en.target);reveal(en.target,{translateY:[36,0]});setTimeout(function(){var obj={v:0},el=document.getElementById('ahaCounter');anime({targets:obj,v:1620,duration:2400,easing:'easeOutExpo',update:function(){el.textContent='R$ '+Math.round(obj.v).toLocaleString('pt-BR')}});setTimeout(function(){anime({targets:'#ahaCounter',scale:[1,1.05,1],duration:550,easing:'easeInOutQuad'})},2500)},500)})},{threshold:.18});var ahaEl=document.getElementById('step8');if(ahaEl)ahaObs.observe(ahaEl);
+(function(){var carousel=document.getElementById('step2Carousel');if(!carousel)return;requestAnimationFrame(function(){var maxScroll=carousel.scrollWidth-carousel.clientWidth;if(maxScroll<=0)return;var pos=0,direction=1,speed=0.55,paused=false;carousel.addEventListener('mouseenter',function(){paused=true});carousel.addEventListener('mouseleave',function(){paused=false});carousel.addEventListener('touchstart',function(){paused=true},{passive:true});carousel.addEventListener('touchend',function(){setTimeout(function(){paused=false},2000)});function tick(){if(!paused){pos+=speed*direction;if(pos>=maxScroll){pos=maxScroll;direction=-1;paused=true;setTimeout(function(){paused=false},900)}else if(pos<=0){pos=0;direction=1;paused=true;setTimeout(function(){paused=false},900)}carousel.scrollLeft=pos}requestAnimationFrame(tick)}tick()})})();
+(function(){var track=document.getElementById('carouselTrack');if(!track)return;requestAnimationFrame(function(){var chips=track.querySelectorAll('.logo-name'),n=chips.length/2,w=0;for(var i=0;i<n;i++)w+=chips[i].offsetWidth+16;var anim=anime({targets:track,translateX:[0,-w],duration:40000,easing:'linear',loop:true});track.parentElement.addEventListener('mouseenter',function(){anim.pause()});track.parentElement.addEventListener('mouseleave',function(){anim.play()})})})();
+document.querySelectorAll('.phone').forEach(function(p){p.addEventListener('mouseenter',function(){anime({targets:this,translateY:-7,duration:380,easing:'easeOutQuart'})});p.addEventListener('mouseleave',function(){anime({targets:this,translateY:0,duration:380,easing:'easeOutQuart'})})});
+document.querySelectorAll('.branch-card').forEach(function(c){c.addEventListener('mouseenter',function(){anime({targets:this,translateX:5,duration:280,easing:'easeOutCubic'})});c.addEventListener('mouseleave',function(){anime({targets:this,translateX:0,duration:280,easing:'easeOutCubic'})})});
+document.querySelectorAll('.guide-pill').forEach(function(p){p.addEventListener('mouseenter',function(){anime({targets:this,scale:1.05,duration:200,easing:'spring(1,80,16,0)'})});p.addEventListener('mouseleave',function(){anime({targets:this,scale:1,duration:200,easing:'spring(1,80,16,0)'})})});
+document.querySelectorAll('.pcat-section').forEach(function(el){var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(!entry.isIntersecting||revealed.has(entry.target))return;revealed.add(entry.target);var left=entry.target.querySelector('.pcat-left'),right=entry.target.querySelector('.pcat-right'),isRev=entry.target.classList.contains('pcat-reverse');if(left)anime({targets:left,opacity:[0,1],translateX:[isRev?30:-30,0],duration:800,easing:'easeOutQuart'});if(right)anime({targets:right,opacity:[0,1],translateX:[isRev?-30:30,0],duration:800,delay:120,easing:'easeOutQuart'})})},{threshold:.1});obs.observe(el);var left=el.querySelector('.pcat-left'),right=el.querySelector('.pcat-right');if(left)left.style.opacity='0';if(right)right.style.opacity='0'});
+var startObs=new IntersectionObserver(function(e){e.forEach(function(en){if(!en.isIntersecting||revealed.has(en.target))return;revealed.add(en.target);anime({targets:en.target.querySelector('.start-inner'),opacity:[0,1],translateY:[32,0],duration:900,easing:'easeOutExpo',delay:100});anime({targets:en.target.querySelectorAll('.start-step'),opacity:[0,1],translateY:[12,0],delay:anime.stagger(80,{start:600}),duration:500,easing:'easeOutCubic'});anime({targets:en.target.querySelector('.footer-bar'),opacity:[0,1],duration:600,delay:900,easing:'easeOutQuart'})})},{threshold:.15});var startSec=document.querySelector('.start-section');if(startSec)startObs.observe(startSec);
+/* Footer blueprint canvas */
+(function(){var c=document.getElementById('footerCanvas');if(!c)return;var ctx=c.getContext('2d'),W,H;function resize(){var r=c.parentElement.getBoundingClientRect();W=c.width=r.width*2;H=c.height=r.height*2;c.style.width=r.width+'px';c.style.height=r.height+'px';ctx.scale(2,2);draw()}resize();window.addEventListener('resize',resize);function draw(){var w=W/2,h=H/2;ctx.clearRect(0,0,w,h);var col='rgba(255,255,255,';ctx.strokeStyle=col+'.03)';ctx.lineWidth=.5;for(var x=0;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(var y=0;y<h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}var cx=w*.65,cy=h*.45;for(var i=0;i<20;i++){var a=(i/20)*Math.PI*2,r=Math.max(w,h)*.5;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.strokeStyle=col+'.025)';ctx.lineWidth=.5;ctx.stroke()}for(var r=30;r<Math.max(w,h)*.5;r+=45){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle=col+'.02)';ctx.lineWidth=.5;ctx.stroke()}}})();
+</script>
+</body>
+</html>
